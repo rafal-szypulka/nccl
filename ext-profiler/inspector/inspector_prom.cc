@@ -110,7 +110,7 @@ inspectorResult_t inspectorPromCacheStaticLabels(struct inspectorCommInfo* commI
  * Description:
  *
  *   Formats labels for Prometheus metrics from communicator and collective info.
- *   Uses cached static labels and only adds dynamic parts (collective, timestamp, etc).
+ *   Uses cached static labels and only adds dynamic parts (collective, message size etc).
  *
  * Thread Safety:
  *
@@ -133,19 +133,13 @@ static inspectorResult_t inspectorPromGetLabels(char* labels,
                                                 size_t labelSize,
                                                 struct inspectorCommInfo* commInfo,
                                                 struct inspectorCompletedCollInfo* collInfo) {
-  char datetimeStr[32];
-  INS_CHK(inspectorGetTimeUTC(datetimeStr, sizeof(datetimeStr)));
-
   char msgSizeStr[32];
   inspectorFormatHumanReadableSize(collInfo->msgSizeBytes, msgSizeStr, sizeof(msgSizeStr));
 
-
   int ret = snprintf(labels, labelSize,
-                     "%s,collective=\"%s\",coll_sn=\"%lu\",timestamp=\"%s\",message_size=\"%s\"",
+                     "%s,collective=\"%s\",message_size=\"%s\"",
                      commInfo->cachedStaticLabels,
                      ncclFuncToString(collInfo->func),
-                     collInfo->sn,
-                     datetimeStr,
                      msgSizeStr);
 
   if (ret < 0 || (size_t)ret >= labelSize) {
